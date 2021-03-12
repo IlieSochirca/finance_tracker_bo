@@ -108,11 +108,16 @@ celerybeat-schedule
 # Environments
 .env
 .venv
-env/
+fin_venv/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+
+# Google sheets stuff
+
+gsheet_config.json
 
 # Spyder project settings
 .spyderproject
