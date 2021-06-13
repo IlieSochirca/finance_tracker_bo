@@ -69,7 +69,9 @@ def add_expense_to_current_month(message):
     """
     sh = open_google_sheets()
     worksheet_list = sh.worksheets()
+    print("LIST", worksheet_list)
     worksheet_list = worksheet_list[:len(worksheet_list) - 2]
+    print(worksheet_list)
     category_list = [f"{worksheet_list.index(i) + 1}. {i.title}" for i in worksheet_list]
     bot.send_message(message.chat.id, "\n".join([_ for _ in category_list]))
     msg = bot.reply_to(message, 'Please choose the expense category number from message above: ')
@@ -132,8 +134,15 @@ def current_month_balance(message):
     :param message:
     :return: Current income, expense and balance
     """
+
+    print("Helloooo")
     sh = open_google_sheets()
+
+    print("==========")
+    print(sh)
     worksheet = sh.worksheet("Balance")
+
+    print(worksheet)
     bot.send_message(message.chat.id, "Current month income is: " + worksheet.acell('B15').value)
     bot.send_message(message.chat.id, "Current month expenses are: " + worksheet.acell('D15').value)
     bot.send_message(message.chat.id, "Current month balance is: " + worksheet.acell('F1').value)

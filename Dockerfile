@@ -1,5 +1,14 @@
 FROM python:3.8-alpine
 
+# ARG definition
+ARG TG_TOKEN
+ARG SERVICE_ACCOUNT
+ARG USER_ID
+
+ENV tg_token=$TG_TOKEN
+ENV service_account=$SERVICE_ACCOUNT
+ENV user_id=$USER_ID
+
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1

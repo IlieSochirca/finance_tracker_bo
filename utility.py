@@ -1,21 +1,20 @@
 """Module that will contain all important methods, configs """
+import logging
 import os
 from datetime import datetime
 
 import gspread
 import telebot
-from dotenv import load_dotenv
-
-load_dotenv()  # will disappear after dockerizataion
+from gspread import SpreadsheetNotFound
 
 """"
 $ export TOKEN=<bot_token>
 $ export CHAT_ID=<chat_id>
 """
 
-TG_TOKEN = os.getenv("TG_TOKEN", None)
-SERVICE_ACCOUNT = os.getenv("SERVICE_ACCOUNT", None)
-USERS_ID = os.getenv("USER_ID", None).split(":")
+TG_TOKEN = os.environ.get("TG_TOKEN")
+SERVICE_ACCOUNT = os.environ.get("SERVICE_ACCOUNT")
+USERS_ID = os.environ.get("USER_ID")
 
 URL = f"https://api.telegram.org/bot{TG_TOKEN}/"
 
@@ -29,7 +28,7 @@ def check_user_authorization_telegram(func):
     """Decorator that is checking if user that is accessing telegram bot is authorized or not"""
 
     def wrapper(*args, **kwargs):
-        if kwargs.get("message").from_user.id in USERS_ID:
+        if not USERS_ID and kwargs.get("message").from_user.id in USERS_ID.split(":"):
             func(*args, *kwargs)
         else:
             bot.send_message(kwargs.get("message").chat.id,
@@ -40,7 +39,11 @@ def check_user_authorization_telegram(func):
 
 def open_google_sheets():
     """Open Google Sheets that we will use to insert data in """
-    return gc.open(formatted_date.today().strftime("%Y.%m"))
+    spreadsheet_name = formatted_date.today().strftime("%Y.%m")
+    try:
+        return gc.open(spreadsheet_name)
+    except SpreadsheetNotFound:
+        logging.warning("Spreasheet with name: %s not found", spreadsheet_name)
 
 
 def next_available_row(worksheet):

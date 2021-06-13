@@ -108,14 +108,14 @@ celerybeat-schedule
 # Environments
 .env
 .venv
-fin_venv/
+fin_venv/*
 venv/
 ENV/
 env.bak/
 venv.bak/
 
 
-# Google sheets stuff
+# Google sheets settings
 
 gsheet_config.json
 
