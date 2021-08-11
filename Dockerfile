@@ -25,13 +25,6 @@ EXPOSE $PORT
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT
 
 
-
-
-
-
-
-
-
 # ==========================================================================================
 
 # https://testdriven.io/blog/deploying-django-to-heroku-with-docker/

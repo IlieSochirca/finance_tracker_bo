@@ -46,6 +46,31 @@ def open_google_sheets():
         logging.warning("Spreasheet with name: %s not found", spreadsheet_name)
 
 
+def get_worksheet_list_and_register_handler(message, handler):
+    """ Return list of worksheets and list of categories """
+    sh = open_google_sheets()
+    worksheet_list = sh.worksheets()
+    worksheet_list = worksheet_list[:len(worksheet_list) - 2]
+    category_list = [f"{worksheet_list.index(i) + 1}. {i.title}" for i in worksheet_list]
+    bot.send_message(message.chat.id, "\n".join([_ for _ in category_list]))
+    msg = bot.reply_to(message, 'Please choose the expense category number from message above: ')
+    bot.register_next_step_handler(msg, handler, worksheet_list)
+
+
+def validate_input_category(message):
+    """Validate User input category and returns it's index"""
+    category_num = None
+    try:
+        if message.text.isdigit():
+            category_num = int(message.text) - 1
+        elif message.text in ["x", "X", "exit"]:
+            bot.send_message(message.chat.id, "See u later :X")
+            bot.stop_poll(message_id=message.message_id, chat_id=message.chat.id)
+    except ValueError:
+        bot.reply_to(message, "Incorrect Category. Please start from the beginning")
+    return category_num
+
+
 def next_available_row(worksheet):
     """
     This function accepts worksheet as an argument and returns empty row number as result.

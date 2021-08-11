@@ -5,7 +5,8 @@ import telebot
 from fastapi import FastAPI, Request, Response
 
 from utility import URL, bot, check_user_authorization_telegram, \
-    open_google_sheets, formatted_date, add_input_data_to_google_sheet
+    open_google_sheets, formatted_date, add_input_data_to_google_sheet, get_worksheet_list_and_register_handler, \
+    validate_input_category
 
 logger = logging.getLogger("main")
 
@@ -60,22 +61,39 @@ def handle_start_help(message):
 
 
 @check_user_authorization_telegram
-@bot.message_handler(commands=["AddExpenseToCurrentMonth", "AECM", "aecm"])
-def add_expense_to_current_month(message):
+@bot.message_handler(commands=["AddExpenseToCurrentMonth", "AECM", "ae"])
+def add_expense_to_current_month_handler(message):
     """
     Add expense to current month
-
     :param message:
     """
-    sh = open_google_sheets()
-    worksheet_list = sh.worksheets()
-    print("LIST", worksheet_list)
-    worksheet_list = worksheet_list[:len(worksheet_list) - 2]
-    print(worksheet_list)
-    category_list = [f"{worksheet_list.index(i) + 1}. {i.title}" for i in worksheet_list]
-    bot.send_message(message.chat.id, "\n".join([_ for _ in category_list]))
-    msg = bot.reply_to(message, 'Please choose the expense category number from message above: ')
-    bot.register_next_step_handler(msg, add_current_month_expense_input_category, worksheet_list)
+    get_worksheet_list_and_register_handler(message, add_current_month_expense_input_category)
+
+
+@bot.message_handler(commands=["CheckCurrentMonthCategoryExpenses", "CME", "ce"])
+def check_category_expenses_handler(message):
+    """
+    Handler  to check amount of money spent for a specific category
+    :param message:
+    """
+    get_worksheet_list_and_register_handler(message, check_input_category_per_month_expenses)
+
+
+def check_input_category_per_month_expenses(message, worksheet_list):
+    """
+    returns Sum spent per category per month
+    :param message:
+    :param worksheet_list:
+    """
+    category_num = validate_input_category(message)
+
+    try:
+        worksheet = worksheet_list[category_num]
+        cols_count = worksheet.col_count
+        bot.send_message(message.chat.id,
+                         f" {worksheet.title} expenses until today are {worksheet.col_values(cols_count)[1]}")
+    except Exception as e:
+        bot.reply_to(message, "Please choose the expense category number from message above: ")
 
 
 def add_current_month_expense_input_category(message, worksheet_list):
@@ -84,10 +102,8 @@ def add_current_month_expense_input_category(message, worksheet_list):
     :param message:
     :param worksheet_list:
     """
-    try:
-        category_num = int(message.text) - 1
-    except ValueError:
-        bot.reply_to(message, "Incorrect Category!")
+
+    category_num = validate_input_category(message)
 
     try:
         worksheet = worksheet_list[category_num]
@@ -127,7 +143,7 @@ def add_current_month_expense_input_string(message, worksheet):
         bot.register_next_step_handler(msg, add_current_month_expense_input_string, worksheet)
 
 
-@bot.message_handler(commands=["CurrentMonthBalance", "CMB", "cmb"])
+@bot.message_handler(commands=["CurrentMonthBalance", "CMB", "cb"])
 def current_month_balance(message):
     """
     Method that returns 3 different data to User: income, expense and balance
@@ -135,20 +151,14 @@ def current_month_balance(message):
     :return: Current income, expense and balance
     """
 
-    print("Helloooo")
     sh = open_google_sheets()
-
-    print("==========")
-    print(sh)
     worksheet = sh.worksheet("Balance")
-
-    print(worksheet)
     bot.send_message(message.chat.id, "Current month income is: " + worksheet.acell('B15').value)
     bot.send_message(message.chat.id, "Current month expenses are: " + worksheet.acell('D15').value)
     bot.send_message(message.chat.id, "Current month balance is: " + worksheet.acell('F1').value)
 
 
-@bot.message_handler(commands=["AddCurrentMonthIncome", "ACMI", "acmi"])
+@bot.message_handler(commands=["AddCurrentMonthIncome", "ACMI", "ai"])
 def add_current_month_income(message):
     """
     Add Income to Current Month
