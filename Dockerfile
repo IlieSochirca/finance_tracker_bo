@@ -1,4 +1,5 @@
 FROM python:3.8-alpine
+WORKDIR /app
 
 # ARG definition
 ARG TG_TOKEN
@@ -18,7 +19,7 @@ ENV PORT=$PORT
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY . /app
 
 EXPOSE $PORT
 
