@@ -159,6 +159,7 @@ def add_input_data_to_google_sheet(message, input_data, worksheet):
         sum_number = float(input_data[-1])
     except IndexError:
         bot.reply_to(message, "Wrong Input. Please start from the beginning")
-    worksheet.update('C' + str(empty_string), str(sum_number).replace(u"\xa0", u""))
+    # int(str(sum_number).replace(u"\xa0", u" ") could be a solution if it doesn't work
+    worksheet.update('C' + str(empty_string), sum_number)
     return ', '.join(map(str, worksheet.get('A' + str(empty_string) + ":" +
                                             'C' + str(empty_string)))).strip('[]')
