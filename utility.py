@@ -53,6 +53,8 @@ def list_all_sheets_in_finance_directory():
 def get_worksheet_list_and_register_handler(message, handler, month=datetime.today().strftime("%Y.%m")):
     """ Return list of worksheets and list of categories """
     sh = open_google_sheets(month)
+    if not sh:
+        bot.send_message(message.chat.id, "Spreadsheet doesn't exist. Please check!")
     worksheet_list = sh.worksheets()
     worksheet_list = worksheet_list[:len(worksheet_list) - 2]
     category_list = [f"{worksheet_list.index(i) + 1}. {i.title}" for i in worksheet_list]
@@ -145,7 +147,7 @@ def add_input_data_to_google_sheet(message, input_data, worksheet):
     worksheet.format('C' + str(empty_string), {"horizontalAlignment": "RIGHT",
                                                "numberFormat": {
                                                    "type": "CURRENCY",
-                                                   "pattern": "€ #,##0.00"},
+                                                   "pattern": "€ 0.00"},
                                                "textFormat": {
                                                    "fontSize": 12
                                                }
